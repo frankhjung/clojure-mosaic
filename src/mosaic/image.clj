@@ -19,7 +19,7 @@
   (let [w (.getWidth image)
         h (.getHeight image)
         pixels ^ints (.getRGB image 0 0 w h nil 0 w)
-        len (count pixels)]
+        len (alength pixels)]
     (loop [idx 0
            sum-r-sq 0.0
            sum-g-sq 0.0
@@ -44,7 +44,7 @@
   (let [w (.getWidth image)
         h (.getHeight image)
         pixels ^ints (.getRGB image 0 0 w h nil 0 w)
-        len (count pixels)]
+        len (alength pixels)]
     (loop [idx 0
            sum-r 0.0
            sum-g 0.0
@@ -66,24 +66,25 @@
   "Resizes image to fit target-size while maintaining aspect ratio,
    and pads with dominant color."
   [^BufferedImage image target-size]
-  (let [w (.getWidth image)
+  (let [ts (int target-size)
+        w (.getWidth image)
         h (.getHeight image)
-        scale (double (/ target-size (max w h)))
+        scale (/ (double ts) (max w h))
         new-w (int (* w scale))
         new-h (int (* h scale))
         dominant ^doubles (get-dominant-color image)
         bg-color (Color. (int (aget dominant 2))
                          (int (aget dominant 1))
                          (int (aget dominant 0)))
-        res (BufferedImage. target-size target-size BufferedImage/TYPE_INT_RGB)
+        res (BufferedImage. ts ts BufferedImage/TYPE_INT_RGB)
         g ^Graphics2D (.createGraphics res)]
     (doto g
       (.setColor bg-color)
-      (.fillRect 0 0 target-size target-size)
+      (.fillRect 0 0 ts ts)
       (.setRenderingHint RenderingHints/KEY_INTERPOLATION
                          RenderingHints/VALUE_INTERPOLATION_BICUBIC)
-      (.drawImage image (int (/ (- target-size new-w) 2))
-                  (int (/ (- target-size new-h) 2))
+      (.drawImage image (int (/ (- ts new-w) 2))
+                  (int (/ (- ts new-h) 2))
                   new-w new-h nil)
       (.dispose))
     res))

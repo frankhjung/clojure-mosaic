@@ -18,10 +18,14 @@
   (let [{:keys [options summary errors]} (parse-opts args cli-options)]
     (cond
       (:help options) (println summary)
-      errors (println (str/join "\n" errors))
-      (not-every? options [:input :directory :output :size :tile])
-      (do (println "Missing required options.")
-          (println summary))
+      errors (binding [*out* *err*]
+               (println (str/join "\n" errors))
+               (System/exit 1))
+      (not-every? #(contains? options %) [:input :directory :output :size :tile])
+      (binding [*out* *err*]
+        (println "Missing required options.")
+        (println summary)
+        (System/exit 1))
       :else (try
               (core/generate-mosaic options)
               (catch Exception e
