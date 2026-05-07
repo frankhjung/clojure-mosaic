@@ -77,7 +77,7 @@
                          (int (aget dominant 1))
                          (int (aget dominant 0)))
         res (BufferedImage. ts ts BufferedImage/TYPE_INT_RGB)
-        g ^Graphics2D (.createGraphics res)]
+        ^Graphics2D g (.createGraphics res)]
     (doto g
       (.setColor bg-color)
       (.fillRect 0 0 ts ts)

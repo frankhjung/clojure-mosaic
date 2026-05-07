@@ -36,6 +36,13 @@ compile: ## Compile source code
 test: ## Run unit tests
 	$(LEIN) test
 
+.PHONY: build
+build: uberjar ## Build a standalone executable jar (alias for uberjar)
+
+.PHONY: uberjar
+uberjar: ## Build a standalone executable jar
+	$(LEIN_UBERJAR)
+
 .PHONY: run
 run: ## Run with help flag
 	$(LEIN) run -- -h
@@ -61,4 +68,4 @@ clean: ## Delete all generated files
 
 .PHONY: version
 version: ## Print the package version
-	@grep ":defproject" project.clj | cut -d'"' -f4
+	@grep -m 1 "defproject" project.clj | cut -d'"' -f2

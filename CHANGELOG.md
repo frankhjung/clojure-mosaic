@@ -6,30 +6,33 @@ log follows the conventions of
 
 ## [Unreleased]
 
-### Changed
-
-- Add a new arity to `make-widget-async` to provide a different widget shape.
-
-## [0.1.1] - 2026-05-07
-
-### Changed
-
-- Documentation on how to make the widgets.
-
-### Removed
-
-- `make-widget-sync` - we're all async, all the time.
-
-### Fixed
-
-- Fixed widget maker to keep working when daylight savings switches over.
-
-## 0.1.0 - 2026-05-07
+## 0.1.1 - 2026-05-07
 
 ### Added
 
-- Files from the new template.
-- Widget maker public API - `make-widget-sync`.
+- Initial release of the Clojure photo mosaic generator.
+- Support for CLI usage to generate mosaics from an input image and a tile
+  directory.
+- Concurrent tile matching and rendering via `pmap`.
+- EDN file cache for tile metadata, keyed on directory content hash.
+- Redmean colour distance metric for perceptually accurate tile matching.
+- `(set! *warn-on-reflection* true)` to all namespaces (`cache`, `core`, `math`,
+  `main`) for consistent reflection checking across the codebase.
 
-[Unreleased]: https://sourcehost.site/your-name/mosaic/compare/0.1.1...HEAD
-[0.1.1]: https://sourcehost.site/your-name/mosaic/compare/0.1.0...0.1.1
+### Changed
+
+- **`cache.clj`**: replaced `(if ... nil)` branches with `(when ...)` for
+  idiomatic nil-returning conditionals.
+- **`core.clj`**: added `^BufferedImage` type hint to `base-img` binding and
+  `get-tile-from-cache` return type, eliminating all reflection warnings;
+  wrapped `drawImage` coordinate arguments in `(int ...)` to resolve
+  `Long`→`int` reflection; replaced `(remove nil? (pmap ...))` with
+  `(keep identity (pmap ...))` ; replaced bare `Exception.` with `ex-info`.
+- **`image.clj`**: minor idiomatic cleanup.
+- **`main.clj`**: improved CLI error handling structure.
+- **`README.md`**: full rewrite with quick-start guide, CLI usage table, make
+  target reference, project structure, and coding approach sections.
+- **`Makefile`**: minor target fixes.
+
+[Unreleased]: https://gitlab.com/frankhjung1/clojure-mosaic/-/compare/0.1.1...HEAD
+[0.1.1]: https://gitlab.com/frankhjung1/clojure-mosaic/-/compare/0.1.0...0.1.1
