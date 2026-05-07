@@ -4,6 +4,8 @@
             [mosaic.core :as core])
   (:gen-class))
 
+(set! *warn-on-reflection* true)
+
 (def cli-options
   [["-i" "--input INPUT" "Path to the source image file."]
    ["-d" "--directory DIRECTORY" "Directory containing images to use as tiles."]

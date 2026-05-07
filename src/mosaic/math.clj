@@ -1,5 +1,7 @@
 (ns mosaic.math)
 
+(set! *warn-on-reflection* true)
+
 (defn redmean-distance-sq
   "Calculates the squared Redmean distance between two BGR colors.
    Expects two primitive double arrays of shape [B G R]."

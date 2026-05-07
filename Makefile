@@ -6,10 +6,10 @@ LEIN_CICD = lein with-profile cicd
 LEIN_UBERJAR = lein with-profile cicd,uberjar
 
 .PHONY: default
-default: clean fmt check compile test ## Run default build pipeline
+default: fmt check compile test ## Run default build pipeline
 
 .PHONY: all
-all: check test run ## Check, test, and run the project
+all: clean fmt check compile test run ## Clean, build and run the project
 
 .PHONY: help
 help: ## Display this help
