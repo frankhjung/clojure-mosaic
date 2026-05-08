@@ -12,7 +12,8 @@
   :profiles {:dev {:aliases {"build" ["do" "check," "eftest," "run"]}
                    :plugins [[lein-cljfmt "0.6.8"]
                              [com.github.clj-kondo/lein-clj-kondo "2026.04.15"]]}
-             :cicd {:local-repo ".m2/repository"}
+             :cicd {:local-repo ".m2/repository"
+                    :plugins [[com.github.clj-kondo/lein-clj-kondo "2026.04.15"]]}
              :uberjar {:aot :all
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}}
   :clean-targets [:target-path]

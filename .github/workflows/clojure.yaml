@@ -1,0 +1,58 @@
+---
+name: clojure-mosaic
+
+on:
+  push:
+    branches:
+      - main
+      - "feature*"
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: "0 0 * * *" # daily
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: setup
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "25"
+
+      - name: setup leiningen
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y leiningen
+
+      - name: cache dependencies
+        uses: actions/cache@v5
+        with:
+          path: |
+            .m2/repository
+            ~/.lein
+          key: ${{ runner.os }}-lein-${{ hashFiles('**/project.clj') }}
+          restore-keys: |
+            ${{ runner.os }}-lein-
+
+      - name: lint
+        run: lein with-profile cicd clj-kondo --lint src test
+
+      - name: check
+        run: lein with-profile cicd check
+
+      - name: tests
+        run: lein with-profile cicd test
+
+      - name: show help
+        run: lein with-profile cicd run -- -h
