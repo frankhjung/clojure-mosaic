@@ -3,6 +3,10 @@
 
 (set! *warn-on-reflection* true)
 
+(defprotocol Metric
+  (prepare [this bgr] "Prepares a BGR colour for distance calculation.")
+  (distance-sq [this p1 p2] "Calculates squared distance between two prepared colours."))
+
 (defn redmean-distance-sq
   "Calculates the squared Redmean distance between two BGR colours.
    Expects two primitive double arrays of shape [B G R]."
@@ -31,11 +35,30 @@
         db (- (aget lab1 2) (aget lab2 2))]
     (+ (* dl dl) (* da da) (* db db))))
 
+(defrecord RedmeanMetric []
+  Metric
+  (prepare [_this bgr] bgr)
+  (distance-sq [_this p1 p2] (redmean-distance-sq p1 p2)))
+
+(defrecord CielabMetric []
+  Metric
+  (prepare [_this bgr] (color/xyz->lab (color/srgb->xyz bgr)))
+  (distance-sq [_this p1 p2]
+    (let [dl (- (aget ^doubles p1 0) (aget ^doubles p2 0))
+          da (- (aget ^doubles p1 1) (aget ^doubles p2 1))
+          db (- (aget ^doubles p1 2) (aget ^doubles p2 2))]
+      (+ (* dl dl) (* da da) (* db db)))))
+
+(defn get-metric [name]
+  (case name
+    "redmean" (->RedmeanMetric)
+    "cielab" (->CielabMetric)))
+
 (defn find-best-match
   "Finds the index of the tile with the minimum distance to the target colour.
-   target-colour: [B G R] double array
-   tile-colors: sequence of [B G R] double arrays
-   dist-fn: function [^doubles ^doubles] -> double"
+   target-colour: Prepared colour
+   tile-colors: sequence of Prepared colours
+   dist-fn: function [p1 p2] -> double"
   [target-colour tile-colors dist-fn]
   (let [distances (map-indexed (fn [idx tc]
                                  [idx (dist-fn target-colour tc)])

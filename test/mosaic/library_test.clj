@@ -1,8 +1,7 @@
 (ns mosaic.library-test
   (:require [clojure.test :refer [deftest is testing]]
             [mosaic.library :as library])
-  (:import [java.awt.image BufferedImage]
-           [java.io File]))
+  (:import [java.awt.image BufferedImage]))
 
 (deftest test-library-lifecycle
   (testing "Library provides metadata and images"

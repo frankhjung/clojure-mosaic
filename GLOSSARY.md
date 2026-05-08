@@ -38,12 +38,25 @@ final Mosaic. The grid dimensions (nx by ny) are determined by the Source
 Image's aspect ratio and the Target Size, snapped to the nearest whole
 multiple of the tile size.
 
+## Metric
+
+An interface (protocol) that defines how colours are compared for similarity.
+It consists of a preparation step (converting to a specific colour space)
+and a distance calculation step.
+
 ## Mosaic
 
 The final output image, composed of a Grid of Tiles that collectively
 resemble the original Source Image when viewed from a distance. Its final
 dimensions are exactly the product of the grid cell count and the tile
 size, which may be slightly larger than the user-requested Target Size.
+
+## Prepared Colour
+
+A representation of a colour that has been optimised for a specific Metric.
+This might be the original BGR array (for Redmean) or a converted LAB
+triple (for CIELAB). Preparing colours once before a loop avoids redundant
+computations.
 
 ## Redmean
 

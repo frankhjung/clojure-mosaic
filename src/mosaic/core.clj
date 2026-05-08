@@ -25,14 +25,15 @@
     (with-open [lib ^Closeable (library/open directory tile)]
       (let [tiles (library/tile-metadata lib)
             _ (when (empty? tiles) (throw (ex-info "No valid tiles found." {})))
-            tile-colors (map #(double-array (:avg %)) tiles)
 
             _ (println (format "Grid: %dx%d, Output: %dx%d" nx ny out-w out-h))
             _ (println "Metric:" metric)
 
-            dist-fn (case metric
-                      "redmean" math/redmean-distance-sq
-                      "cielab" math/cielab-distance-sq)
+            metric-adapter (math/get-metric metric)
+
+            ;; Prepare tile colors once
+            tile-colors (mapv #(math/prepare metric-adapter (double-array (:avg %)))
+                              tiles)
 
             ;; Resize input image to grid size to get target colors
             input-small (BufferedImage. nx ny BufferedImage/TYPE_INT_RGB)
@@ -41,12 +42,16 @@
                 (.drawImage base-img 0 0 nx ny nil)
                 (.dispose))
 
-            target-colors (for [y (range ny) x (range nx)]
-                            (image/get-average-color
-                             (.getSubimage input-small x y 1 1)))
+            target-bgrs (for [y (range ny) x (range nx)]
+                          (image/get-average-color
+                           (.getSubimage input-small x y 1 1)))
+
+            ;; Prepare target colors once
+            target-colors (mapv #(math/prepare metric-adapter %) target-bgrs)
 
             ;; Match tiles
             _ (println "Matching tiles...")
+            dist-fn (partial math/distance-sq metric-adapter)
             best-matches (pmap #(math/find-best-match % tile-colors dist-fn)
                                target-colors)
 

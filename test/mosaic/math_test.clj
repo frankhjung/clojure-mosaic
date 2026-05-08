@@ -39,3 +39,23 @@
                  (double-array [200.0 200.0 200.0])]
           idx (mosaic.math/find-best-match target tiles cielab-distance-sq)]
       (is (= 0 idx)))))
+
+(deftest test-metric-protocol
+  (testing "Redmean Metric"
+    (let [m (mosaic.math/get-metric "redmean")
+          c1 (double-array [0.0 0.0 0.0])
+          c2 (double-array [255.0 255.0 255.0])
+          p1 (mosaic.math/prepare m c1)
+          p2 (mosaic.math/prepare m c2)]
+      (is (instance? (Class/forName "[D") p1)) ;; Still a double array
+      (is (> (mosaic.math/distance-sq m p1 p2) 0.0))))
+
+  (testing "CIELAB Metric"
+    (let [m (mosaic.math/get-metric "cielab")
+          c1 (double-array [0.0 0.0 0.0])
+          c2 (double-array [255.0 255.0 255.0])
+          p1 (mosaic.math/prepare m c1)
+          p2 (mosaic.math/prepare m c2)]
+      (is (instance? (Class/forName "[D") p1))
+      ;; Check that distance calculation on prepared values works
+      (is (< (Math/abs (- (mosaic.math/distance-sq m p1 p2) 10000.0)) 1e-3)))))
