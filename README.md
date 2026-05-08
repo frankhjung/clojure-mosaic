@@ -112,11 +112,14 @@ make example
 mosaic/
 ├── src/mosaic/
 │   ├── main.clj    # CLI entry point (clojure.tools.cli)
-│   ├── core.clj    # Orchestration: tile loading and mosaic assembly
+│   ├── core.clj    # Orchestration: grid calculation and assembly
+│   ├── library.clj # Tile Library: metadata, caching, and image loading
 │   ├── image.clj   # Image I/O, resize-and-pad, colour extraction
-│   ├── math.clj    # Redmean colour distance, best-match search
-│   └── cache.clj   # EDN file cache keyed on directory hash
+│   ├── math.clj    # Colour distance calculation (Redmean, CIELAB)
+│   └── color.clj   # Colour space conversions (sRGB, XYZ, CIELAB)
 ├── test/mosaic/
+│   ├── color_test.clj
+│   ├── library_test.clj
 │   └── math_test.clj
 ├── images/         # Sample tile images
 ├── project.clj

@@ -12,10 +12,11 @@ responsibility:
 | Namespace | Role |
 | --------- | ---- |
 | `mosaic.main` | CLI entry point — parses arguments and delegates to `core` |
-| `mosaic.core` | Orchestration — loads tiles, builds the grid, assembles the mosaic |
+| `mosaic.core` | Orchestration — calculates grid and assembles the mosaic |
+| `mosaic.library`| Tile Library — manages metadata, caching, and image loading |
 | `mosaic.image` | Image I/O and pixel-level operations (load, save, resize, colour) |
-| `mosaic.math` | Colour distance calculation using the Redmean metric |
-| `mosaic.cache` | Tile metadata persistence — avoids re-scanning unchanged directories |
+| `mosaic.math` | Colour distance calculation using the Redmean and CIELAB metrics |
+| `mosaic.color` | Colour space conversions (sRGB, XYZ, CIELAB) |
 
 ## Component Diagram
 
@@ -23,9 +24,10 @@ responsibility:
 graph TD
     CLI["mosaic.main\n(CLI / entry point)"]
     CORE["mosaic.core\n(orchestration)"]
+    LIB["mosaic.library\n(tile library)"]
     IMAGE["mosaic.image\n(image I/O & pixels)"]
     MATH["mosaic.math\n(colour distance)"]
-    CACHE["mosaic.cache\n(tile cache)"]
+    COLOR["mosaic.color\n(colour space)"]
 
     TILEDIR[("Tile directory\n(JPEG/PNG files)")]
     CACHEFILE[("Cache file\n(.mosaic-cache)")]
@@ -33,10 +35,12 @@ graph TD
     OUTIMG[("Mosaic output\n(JPEG)")]
 
     CLI -->|"options map"| CORE
+    CORE -->|"open / metadata / fetch"| LIB
     CORE -->|"load / save"| IMAGE
     CORE -->|"find-best-match"| MATH
-    CORE -->|"load-cache / save-cache"| CACHE
-    CACHE --- CACHEFILE
+    LIB -->|"load / resize"| IMAGE
+    LIB --- CACHEFILE
+    MATH -->|"distance-sq"| COLOR
     IMAGE --- TILEDIR
     IMAGE --- SRCIMG
     IMAGE --- OUTIMG
@@ -49,7 +53,7 @@ sequenceDiagram
     actor User
     participant main as mosaic.main
     participant core as mosaic.core
-    participant cache as mosaic.cache
+    participant lib as mosaic.library
     participant image as mosaic.image
     participant math as mosaic.math
 
@@ -59,13 +63,13 @@ sequenceDiagram
     core->>image: load-image(input)
     image-->>core: BufferedImage (base)
 
-    core->>cache: load-cache(dir, cache-file)
+    core->>lib: open(dir, tile-size)
     alt cache hit (dir unchanged)
-        cache-->>core: vec of tile records
+        lib-->>core: TileLibrary adapter
     else cache miss
-        core->>image: load-image + resize-and-pad + get-average-color (pmap per tile)
-        image-->>core: [{:path "..." :avg [B G R]} ...]
-        core->>cache: save-cache(dir, cache-file, tiles)
+        lib->>image: load-image + resize-and-pad + get-average-color (pmap per tile)
+        image-->>lib: [{:path "..." :avg [B G R]} ...]
+        lib->>lib: save-cache(dir, cache-file, tiles)
     end
 
     note over core: Scale input to nx×ny grid,\nsample one pixel per cell
@@ -76,11 +80,17 @@ sequenceDiagram
     end
 
     loop for each grid cell
-        core->>image: resize-and-pad (lazy tile cache)
-        image-->>core: BufferedImage (tile)
+        core->>lib: fetch-image(index)
+        alt image cached
+            lib-->>core: BufferedImage (tile)
+        else cache miss
+            lib->>image: resize-and-pad
+            image-->>lib: BufferedImage (tile)
+        end
         core->>core: draw tile onto output canvas
     end
 
+    core->>lib: close()
     core->>image: save-image(result, output, "jpg")
     image-->>User: mosaic JPEG written to disk
 ```
