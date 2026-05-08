@@ -35,7 +35,7 @@
       (swap! cache-atom assoc path img)
       img)))
 
-(defn generate-mosaic [{:keys [input directory output size tile]}]
+(defn generate-mosaic [{:keys [input directory output size tile metric]}]
   (let [^BufferedImage base-img (image/load-image (io/file input))
         _ (println "Loading tiles...")
         tiles (load-tiles directory tile ".mosaic-cache")
@@ -54,6 +54,11 @@
         out-h (* ny tile)
 
         _ (println (format "Grid: %dx%d, Output: %dx%d" nx ny out-w out-h))
+        _ (println "Metric:" metric)
+
+        dist-fn (case metric
+                  "redmean" math/redmean-distance-sq
+                  "cielab" math/cielab-distance-sq)
 
         ;; Resize input image to grid size to get target colors
         input-small (BufferedImage. nx ny BufferedImage/TYPE_INT_RGB)
@@ -67,7 +72,8 @@
                          (.getSubimage input-small x y 1 1)))
 
         ;; Match tiles
-        best-matches (pmap #(math/find-best-match % tile-colors) target-colors)
+        best-matches (pmap #(math/find-best-match % tile-colors dist-fn)
+                           target-colors)
 
         ;; Assemble mosaic
         res (BufferedImage. out-w out-h BufferedImage/TYPE_INT_RGB)

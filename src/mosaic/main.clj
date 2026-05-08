@@ -14,6 +14,9 @@
     :parse-fn #(Integer/parseInt %)]
    ["-t" "--tile TILE" "The width and height of each square tile."
     :parse-fn #(Integer/parseInt %)]
+   ["-m" "--metric METRIC" "Colour distance metric: redmean or cielab."
+    :default "redmean"
+    :validate [#(contains? #{"redmean" "cielab"} %) "Must be 'redmean' or 'cielab'"]]
    ["-h" "--help"]])
 
 (defn -main [& args]
