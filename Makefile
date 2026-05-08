@@ -25,8 +25,9 @@ fmt: ## Format source code with cljfmt
 	$(LEIN) cljfmt fix
 
 .PHONY: check
-check: ## Check source formatting with cljfmt
+check: ## Check source formatting with cljfmt and lint with clj-kondo
 	$(LEIN) cljfmt check
+	$(LEIN) clj-kondo --lint src
 
 .PHONY: compile
 compile: ## Compile source code

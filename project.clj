@@ -10,7 +10,8 @@
   :main ^:skip-aot mosaic.main
   :target-path "target/%s"
   :profiles {:dev {:aliases {"build" ["do" "check," "eftest," "run"]}
-                   :plugins [[lein-cljfmt "0.6.8"]]}
+                   :plugins [[lein-cljfmt "0.6.8"]
+                             [com.github.clj-kondo/lein-clj-kondo "2026.04.15"]]}
              :cicd {:local-repo ".m2/repository"}
              :uberjar {:aot :all
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}}

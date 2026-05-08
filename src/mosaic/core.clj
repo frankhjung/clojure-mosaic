@@ -28,7 +28,7 @@
           (cache/save-cache dir cache-file (vec tiles))
           tiles))))
 
-(defn- ^BufferedImage get-tile-from-cache [cache-atom path tile-size]
+(defn- get-tile-from-cache ^BufferedImage [cache-atom path tile-size]
   (if-let [img (get @cache-atom path)]
     img
     (let [img (image/resize-and-pad (image/load-image (io/file path)) tile-size)]
