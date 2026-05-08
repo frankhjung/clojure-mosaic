@@ -13,7 +13,7 @@ responsibility:
 | --------- | ---- |
 | `mosaic.main` | CLI entry point — parses arguments and delegates to `core` |
 | `mosaic.core` | Orchestration — calculates grid and assembles the mosaic |
-| `mosaic.library`| Tile Library — manages metadata, caching, and image loading |
+| `mosaic.library` | Tile Library — manages metadata, caching, and image loading |
 | `mosaic.image` | Image I/O and pixel-level operations (load, save, resize, colour) |
 | `mosaic.math` | Colour distance calculation using the Redmean and CIELAB metrics |
 | `mosaic.color` | Colour space conversions (sRGB, XYZ, CIELAB) |
@@ -24,22 +24,26 @@ responsibility:
 graph TD
     CLI["mosaic.main\n(CLI / entry point)"]
     CORE["mosaic.core\n(orchestration)"]
-    LIB["mosaic.library\n(tile library)"]
     IMAGE["mosaic.image\n(image I/O & pixels)"]
     MATH["mosaic.math\n(colour distance)"]
     COLOR["mosaic.color\n(colour space)"]
 
     TILEDIR[("Tile directory\n(JPEG/PNG files)")]
-    CACHEFILE[("Cache file\n(.mosaic-cache)")]
     SRCIMG[("Source image")]
     OUTIMG[("Mosaic output\n(JPEG)")]
+
+    subgraph LIB_GROUP["mosaic.library\n(tile library + cache)"]
+        direction TB
+        LIB["mosaic.library\n(tile library)"]
+        CACHEFILE[("Cache file\n(.mosaic-cache)")]
+        LIB --- CACHEFILE
+    end
 
     CLI -->|"options map"| CORE
     CORE -->|"open / metadata / fetch"| LIB
     CORE -->|"load / save"| IMAGE
     CORE -->|"find-best-match"| MATH
     LIB -->|"load / resize"| IMAGE
-    LIB --- CACHEFILE
     MATH -->|"distance-sq"| COLOR
     IMAGE --- TILEDIR
     IMAGE --- SRCIMG
