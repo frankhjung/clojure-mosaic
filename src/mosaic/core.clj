@@ -2,6 +2,7 @@
   (:require [mosaic.image :as image]
             [mosaic.math :as math]
             [mosaic.library :as library]
+            [mosaic.grid :as grid]
             [clojure.java.io :as io])
   (:import [java.awt Graphics2D]
            [java.awt.image BufferedImage]
@@ -11,15 +12,8 @@
 
 (defn generate-mosaic [{:keys [input directory output size tile metric]}]
   (let [^BufferedImage base-img (image/load-image (io/file input))
-        input-w (.getWidth base-img)
-        input-h (.getHeight base-img)
-        scale (/ (double size) (max input-w input-h))
-
-        nx (int (Math/ceil (/ (* input-w scale) tile)))
-        ny (int (Math/ceil (/ (* input-h scale) tile)))
-
-        out-w (* nx tile)
-        out-h (* ny tile)]
+        grid-plan (grid/plan (.getWidth base-img) (.getHeight base-img) size tile)
+        {:keys [nx ny out-w out-h cells]} grid-plan]
 
     (println "Loading tiles...")
     (with-open [lib ^Closeable (library/open directory tile)]
@@ -42,9 +36,10 @@
                 (.drawImage base-img 0 0 nx ny nil)
                 (.dispose))
 
-            target-bgrs (for [y (range ny) x (range nx)]
-                          (image/get-average-color
-                           (.getSubimage input-small x y 1 1)))
+            target-bgrs (mapv (fn [{:keys [gx gy]}]
+                                (image/get-average-color
+                                 (.getSubimage input-small gx gy 1 1)))
+                              cells)
 
             ;; Prepare target colors once
             target-colors (mapv #(math/prepare metric-adapter %) target-bgrs)
@@ -60,11 +55,10 @@
             g ^Graphics2D (.createGraphics res)]
 
         (println "Assembling mosaic...")
-        (doseq [[idx match-idx] (map-indexed vector best-matches)]
-          (let [x (mod idx nx)
-                y (quot idx nx)
+        (doseq [[cell match-idx] (map vector cells best-matches)]
+          (let [{:keys [px py]} cell
                 ^BufferedImage tile-img (library/fetch-image lib match-idx)]
-            (.drawImage g tile-img (int (* x tile)) (int (* y tile)) nil)))
+            (.drawImage g tile-img (int px) (int py) nil)))
 
         (.dispose g)
         (image/save-image res (io/file output) "jpg")

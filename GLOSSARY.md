@@ -9,9 +9,9 @@ Tile for a Cell.
 
 ## Cell
 
-A single rectangular (typically square) unit within the Grid. Each cell in
-the scaled-down Source Image is replaced by the best-matching Tile during
-mosaic assembly.
+A single rectangular (typically square) unit within the Grid. It represents a 
+spatial mapping between a region of the Source Image and a location in the 
+final Mosaic.
 
 ## CIELAB
 
@@ -37,6 +37,12 @@ The two-dimensional arrangement of Cells that defines the structure of the
 final Mosaic. The grid dimensions (nx by ny) are determined by the Source
 Image's aspect ratio and the Target Size, snapped to the nearest whole
 multiple of the tile size.
+
+## Grid Plan
+
+A deep data structure that encapsulates the entire geometry of a Mosaic. It 
+contains the calculated grid dimensions, final pixel dimensions, and a 
+persistent vector of all Cells.
 
 ## Metric
 
