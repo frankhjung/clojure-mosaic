@@ -7,6 +7,9 @@ is created by sampling the average colour of each cell in the input image and
 finding the best matching tile image from a directory using the Redmean colour
 distance metric.
 
+See also [doc/architecture.md](doc/architecture.md) for an overview of the
+application architecture and design decisions.
+
 ## Example
 
 Run a full mosaic build using the bundled example images:
